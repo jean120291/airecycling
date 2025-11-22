@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AI 리사이클링</title>
+
+<style>
+:root {
+  --primary: #22c55e;
+  --primary-dark: #16a34a;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  touch-action: pan-y;
+}
+
+header {
+  background: white;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.logo:hover { transform: translateY(-2px); }
+
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.nav-link {
+  position: relative;
+  font-weight: 700;
+  color: var(--text-light);
+  padding: 0.5rem 0.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--primary); }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.5rem;
+  height: 3px;
+  background: transparent;
+  border-radius: 4px;
+  transform: scaleX(0);
+  transition: transform 0.25s, background 0.25s;
+}
+.nav-link.active::after {
+  background: var(--primary);
+  transform: scaleX(1);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.location-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.location-selector select {
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  font-weight: 600;
+}
+
+.points-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  font-weight: 800;
+  box-shadow: 0 0 30px rgba(16,185,129,0.3);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.points-pill:hover { transform: translateY(-1px); }
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.page { display: none; animation: fadeIn 0.3s ease; padding-bottom: 80px; }
+.page.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 홈 페이지 */
+.hero {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  border-radius: 20px;
+  color: white;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.hero h1 { font-size: 1.8rem; margin-bottom: 0.8rem; font-weight: 800; line-height: 1.3; }
+.hero p { font-size: 1rem; opacity: 0.95; margin-bottom: 1.5rem; }
+
+.cta-button {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.9rem 2rem; background: white; color: var(--primary);
+  border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  touch-action: manipulation;
+}
+.cta-button:hover, .cta-button:active { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+
+.section-tabs {
+  margin: 1.5rem auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.section-tabs .tablink {
+  color: rgba(255,255,255,0.8);
+  font-weight: 700;
+  position: relative;
+  padding: 0.4rem 0.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.section-tabs .tablink:hover { color: white; }
+.section-tabs .tablink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.4rem;
+  height: 2px;
+  background: transparent;
+  transform: scaleX(0);
+  transition: transform 0.2s, background 0.2s;
+}
+.section-tabs .tablink:hover::after {
+  background: white;
+  transform: scaleX(1);
+}
+
+/* 통계 섹션 */
+.stats-section {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem; margin: 2rem 0;
+}
+.stat-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 1.5rem; border-radius: 16px; text-align: center;
+  border: 2px solid #bbf7d0; transition: transform 0.2s;
+}
+.stat-card:active { transform: scale(0.98); }
+.stat-number {
+  font-size: 2rem; font-weight: 800; color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+.stat-label { color: var(--text); font-weight: 600; font-size: 0.85rem; line-height: 1.4; }
+
+.features {
+  display: grid; grid-template-columns: 1fr;
+  gap: 1rem; margin-top: 2rem;
+}
+
+.feature-card {
+  background: var(--card); padding: 1.5rem; border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-card:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+.feature-icon {
+  width: 56px; height: 56px; background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; margin-bottom: 1rem;
+}
+
+.feature-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
+.feature-card p { color: var(--text-light); line-height: 1.6; font-size: 0.95rem; }
+
+.info-list {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+}
+
+.info-item .em {
+  font-size: 1.5rem;
+  width: 28px;
+  display: inline-grid;
+  place-items: center;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.info-item strong {
+  font-weight: 900;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.info-item p {
+  color: var(--text-light);
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* AI 분석 페이지 */
+.analyzer-container { max-width: 100%; margin: 0 auto; }
+
+.upload-section {
+  background: var(--card); border-radius: 20px; padding: 1.5rem;
+  box-shadow: var(--shadow); text-align: center;
+}
+
+.upload-section h2 { font-size: 1.5rem; margin-bottom: 0.8rem; color: var(--text); }
+.upload-section p { color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+.upload-zone {
+  border: 3px dashed var(--border); border-radius: 16px; padding: 2rem 1rem;
+  background: var(--bg); transition: all 0.3s; cursor: pointer; position: relative;
+}
+.upload-zone:active, .upload-zone.dragover { border-color: var(--primary); background: #f0fdf4; }
+
+.upload-icon { font-size: 3rem; margin-bottom: 0.8rem; opacity: 0.6; }
+
+.upload-zone label {
+  display: inline-block; padding: 0.9rem 1.8rem; background: var(--primary);
+  color: white; border-radius: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+  font-size: 0.95rem; touch-action: manipulation;
+}
+.upload-zone label:active { background: var(--primary-dark); transform: scale(0.98); }
+.upload-zone input { display: none; }
+
+#preview {
+  max-width: 100%; max-height: 400px; border-radius: 16px; margin: 1.5rem auto;
+  display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+#cameraPreview {
+  width: 100%; max-height: 400px; border-radius: 16px; margin: 1.5rem auto;
+  display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  object-fit: cover;
+}
+
+.camera-controls {
+  display: none;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.camera-controls button {
+  padding: 0.9rem 1.8rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  touch-action: manipulation;
+}
+
+.capture-btn {
+  background: var(--primary);
+  color: white;
+}
+.capture-btn:active {
+  background: var(--primary-dark);
+  transform: scale(0.98);
+}
+
+.cancel-btn {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.cancel-btn:active {
+  background: var(--border);
+  transform: scale(0.98);
+}
+
+#loadingMsg {
+  display: none; margin-top: 2rem; padding: 1rem; background: #fef3c7;
+  border-radius: 12px; color: #92400e; font-weight: 600;
+}
+
+.result-container {
+  display: none; margin-top: 1.5rem; background: var(--card);
+  border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow);
+}
+
+.result-header {
+  display: flex; align-items: center; gap: 1rem; padding: 1.5rem;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  border-radius: 12px; color: white; margin-bottom: 1.5rem;
+}
+.result-icon { font-size: 2.5rem; }
+.result-header h3 { font-size: 1.5rem; font-weight: 700; }
+
+.probabilities {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;
+}
+.prob-badge {
+  padding: 0.5rem 1rem; background: var(--bg); border-radius: 8px;
+  font-size: 0.9rem; font-weight: 600; color: var(--text); border: 1px solid var(--border);
+}
+
+.guide-box {
+  background: #f0fdf4; border-left: 4px solid var(--success);
+  padding: 1.5rem; border-radius: 12px; margin-top: 1.5rem;
+}
+.guide-box h4 {
+  color: var(--success); margin-bottom: 0.75rem; display: flex; align-items: center;
+  gap: 0.5rem; font-size: 1.1rem;
+}
+.guide-box p { color: var(--text); line-height: 1.8; }
+
+.back-button {
+  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;
+  background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s;
+  touch-action: manipulation;
+}
+.back-button:active { background: var(--border); transform: scale(0.98); }
+
+/* 리워드 페이지 */
+.reward-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.reward-header {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  padding: 2rem 1.5rem;
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.reward-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.reward-header p {
+  opacity: 0.95;
+  font-size: 0.95rem;
+}
+
+.points-display {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.points-number {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.points-label {
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.reward-item {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.reward-item:active {
+  transform: scale(0.98);
+}
+
+.reward-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.reward-info {
+  flex: 1;
+}
+
+.reward-info h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+  color: var(--text);
+}
+
+.reward-info p {
+  color: var(--text-light);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.reward-points {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.redeem-btn {
+  padding: 0.6rem 1.2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.redeem-btn:active {
+  background: var(--primary-dark);
+  transform: scale(0.98);
+}
+
+.redeem-btn:disabled {
+  background: var(--border);
+  color: var(--text-light);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.info-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-top: 1.5rem;
+}
+
+.info-card h3 {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 0.75rem;
+}
+
+.info-card ul {
+  margin-left: 1.25rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.info-card li {
+  line-height: 1.6;
+  color: var(--text-light);
+}
+
+/* 퀴즈 페이지 */
+.quiz-wrap {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.quiz-head {
+  background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  padding: 2rem 1.5rem;
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.quiz-head h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.quiz-head p {
+  opacity: 0.95;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.quiz-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+}
+
+.q-title {
+  font-weight: 900;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.opt {
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+  background: var(--bg);
+}
+
+.opt:hover {
+  background: #f0fdf4;
+}
+
+.opt input {
+  margin-right: 0.75rem;
+  cursor: pointer;
+}
+
+.quiz-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.quiz-result {
+  font-weight: 900;
+  color: var(--primary);
+  font-size: 1.05rem;
+}
+
+/* 하단 네비게이션 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.8rem 0;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  transition: background 0.2s;
+  touch-action: manipulation;
+  flex: 1;
+  max-width: 120px;
+}
+
+.nav-item:active {
+  background: var(--bg);
+}
+
+.nav-item.active {
+  background: #f0fdf4;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+}
+
+.nav-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.nav-item.active .nav-label {
+  color: var(--primary);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.6rem; }
+  .hero p { font-size: 0.95rem; }
+  main { padding: 1rem; }
+  .upload-section { padding: 1.5rem 1rem; }
+  .logo span:last-child { font-size: 1.1rem; }
+  .nav-tabs { display: none; }
+  .header-right { gap: 0.5rem; }
+  .location-selector { padding: 0.4rem 0.75rem; }
+  .location-selector span { display: none; }
+  .points-pill { padding: 0.5rem 0.9rem; }
+}
+
+@media (min-width: 769px) {
+  .bottom-nav { display: none; }
+  .page { padding-bottom: 2rem; }
+  .features { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+  .rewards-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+  main { padding: 2rem; }
+  .hero { padding: 4rem 2rem; }
+  .hero h1 { font-size: 2.5rem; }
+  .hero p { font-size: 1.2rem; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="header-content">
+    <div class="logo" onclick="goToHome()">
+      <span>♻️</span>
+      <span>AI 리사이클링</span>
+    </div>
+    
+    <nav class="nav-tabs">
+      <div class="nav-link active" id="tabHome" onclick="goToHome()">홈</div>
+      <div class="nav-link" id="tabAnalyzer" onclick="goToAnalyzer()">분석</div>
+      <div class="nav-link" id="tabRewards" onclick="goToRewards()">리워드</div>
+      <div class="nav-link" id="tabQuiz" onclick="goToQuiz()">퀴즈</div>
+    </nav>
+    
+    <div class="header-right">
+      <div class="location-selector">
+        <span>📍</span>
+        <select id="regionSelect">
+          <option value="">지역 선택</option>
+          <option value="서울">서울특별시</option>
+          <option value="부산">부산광역시</option>
+          <option value="대구">대구광역시</option>
+          <option value="광주">광주광역시</option>
+          <option value="인천">인천광역시</option>
+          <option value="대전">대전광역시</option>
+          <option value="울산">울산광역시</option>
+          <option value="세종">세종특별자치시</option>
+          <option value="경기">경기도</option>
+          <option value="제주">제주특별자치도</option>
+        </select>
+      </div>
+      <div class="points-pill" onclick="goToRewards()">
+        <span>🌟</span>
+        <span id="userPoints">0</span>
+        <span>P</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- 홈 페이지 -->
+  <div id="home" class="page active">
+    <div class="hero">
+      <h1>🌍 AI가 알려주는 올바른 분리수거</h1>
+      <p></p>
+      <button class="cta-button" onclick="goToAnalyzer()">
+        <span>📸</span>
+        <span>지금 시작하기</span>
+      </button>
+    </div>
+
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number">75%</div>
+        <div class="stat-label">재활용 가능 쓰레기가 일반쓰레기로 버려짐</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">30분</div>
+        <div class="stat-label">올바른 분리수거로 절약되는 시간</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">85kg</div>
+        <div class="stat-label">연간 1인당 재활용 가능 쓰레기량</div>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">❌</div>
+        <h3>자주 틀리는 분리수거</h3>
+        <p>많은 사람들이 헷갈려하는 품목을 확인해보세요</p>
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="em">🍕</span>
+            <div>
+              <strong>피자박스</strong>
+              <p>기름 묻은 부분은 일반쓰레기, 깨끗한 부분만 종이류</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">🧴</span>
+            <div>
+              <strong>펌프형 용기</strong>
+              <p>펌프는 일반쓰레기, 본체는 플라스틱</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">☕</span>
+            <div>
+              <strong>종이컵</strong>
+              <p>종이팩류로 분리</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">🥤</span>
+            <div>
+              <strong>빨대</strong>
+              <p>사이즈가 작아 재활용 불가, 일반쓰레기</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💡</div>
+        <h3>분리수거 꿀팁</h3>
+        <p>효율적인 분리수거를 위한 실용 팁</p>
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="em">🏷️</span>
+            <div>
+              <strong>라벨 제거</strong>
+              <p>따뜻한 물에 담가두면 접착제가 풀려 쉽게 떨어져요</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">📦</span>
+            <div>
+              <strong>압축하기</strong>
+              <p>페트·캔 압축 시 수거/운반 효율↑</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">💦</span>
+            <div>
+              <strong>헹구기</strong>
+              <p>한 번만 헹궈도 악취·이물질 감소</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">🕗</span>
+            <div>
+              <strong>배출 시간</strong>
+              <p>지역 규정 시간에 맞춰 배출</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🌱</div>
+        <h3>환경 영향</h3>
+        <p>올바른 분리수거가 만드는 변화</p>
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="em">🌳</span>
+            <div>
+              <strong>나무 절약</strong>
+              <p>종이 1톤 재활용 = 나무 17그루 보호</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">⚡</span>
+            <div>
+              <strong>에너지 절감</strong>
+              <p>플라스틱 재활용 시 원유 사용량↓</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">💧</span>
+            <div>
+              <strong>물 보존</strong>
+              <p>신규 생산 대비 물 사용↓</p>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="em">🌍</span>
+            <div>
+              <strong>탄소 감축</strong>
+              <p>1kg 재활용당 CO₂ 약 2.5kg 감축</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI 분석 페이지 -->
+  <div id="analyzer" class="page">
+    <div class="analyzer-container">
+      <div class="upload-section">
+        <h2>분리수거 품목 분석</h2>
+        <p>사진을 업로드하면 AI가 품목과 가이드를 제시합니다</p>
+        
+        <div class="location-selector" style="display: inline-flex; margin-bottom: 1.5rem;">
+          <span>📍</span>
+          <select id="analyzerRegionSelect">
+            <option value="">지역 선택</option>
+            <option value="서울">서울특별시</option>
+            <option value="부산">부산광역시</option>
+            <option value="대구">대구광역시</option>
+            <option value="광주">광주광역시</option>
+            <option value="인천">인천광역시</option>
+            <option value="대전">대전광역시</option>
+            <option value="울산">울산광역시</option>
+            <option value="세종">세종특별자치시</option>
+            <option value="경기">경기도</option>
+            <option value="제주">제주특별자치도</option>
+          </select>
+        </div>
+        
+        <div class="upload-zone" id="uploadZone">
+          <div class="upload-icon">📷</div>
+          <input id="fileInput" type="file" accept="image/*" />
+          <label for="fileInput">사진 선택</label>
+          <p style="margin: 1rem 0 0.5rem 0; color: var(--text-light); font-size: 0.9rem;">
+            또는
+          </p>
+          <button class="cta-button" onclick="startCamera()" style="margin-top: 0.5rem;">
+            <span>카메라로 촬영</span>
+          </button>
+        </div>
+
+        <video id="cameraPreview" autoplay playsinline></video>
+        <div id="cameraControls" class="camera-controls">
+          <button class="capture-btn" onclick="capturePhoto()">
+            <span>📸</span> 사진 촬영
+          </button>
+          <button class="cancel-btn" onclick="stopCamera()">
+            취소
+          </button>
+        </div>
+
+        <img id="preview" alt="미리보기"/>
+        
+        <div id="loadingMsg">
+          <span>🔄</span> AI가 이미지를 분석하고 있습니다...
+        </div>
+      </div>
+
+      <div id="result" class="result-container">
+        <div class="result-header">
+          <span class="result-icon">✅</span>
+          <div>
+            <h3 id="topLabel">분석 결과</h3>
+            <p id="confidence" style="opacity: 0.9; font-size: 0.95rem; font-weight: 400;"></p>
+          </div>
+        </div>
+        
+        <div>
+          <h4 style="margin-bottom: 0.75rem; color: var(--text-light); font-size: 0.9rem;">
+            예측 확률
+          </h4>
+          <div id="topProbs" class="probabilities"></div>
+        </div>
+
+        <div id="guide" class="guide-box"></div>
+
+        <button class="back-button" onclick="resetAnalyzer()">
+          <span>←</span>
+          <span>다시 분석하기</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 리워드 페이지 -->
+  <div id="rewards" class="page">
+    <div class="reward-container">
+      <div class="reward-header">
+        <h2>🎁 나의 리워드</h2>
+        <p>분석 1회 +5P · 퀴즈 보너스 최대 +10P</p>
+      </div>
+
+      <div class="points-display">
+        <div class="points-number" id="totalPoints">0</div>
+        <div class="points-label">보유 포인트</div>
+      </div>
+
+      <div class="rewards-grid" id="rewardsGrid"></div>
+
+      <div class="info-card">
+        <h3>ℹ️ 리워드 사용 가이드</h3>
+        <ul>
+          <li><strong>적립:</strong> 분석 +5P, 퀴즈 보너스(최대 +10P)</li>
+          <li><strong>교환:</strong> 보유 포인트가 충족되면 즉시 교환 가능</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퀴즈 페이지 -->
+  <div id="quiz" class="page">
+    <div class="quiz-wrap">
+      <div class="quiz-head">
+        <h2>🧠 분리수거 퀴즈</h2>
+        <p>정답 4~5개: <strong>+10P</strong> · 정답 3개: <strong>+5P</strong> · 그 외 0P (세션당 1회)</p>
+      </div>
+
+      <div id="quizBody">
+        <div class="quiz-card">
+          <div class="q-title">1) 기름이 많이 묻은 피자박스는?</div>
+          <label class="opt"><input type="radio" name="q1" value="a"> 종이류 배출</label>
+          <label class="opt"><input type="radio" name="q1" value="b"> 일반쓰레기</label>
+        </div>
+
+        <div class="quiz-card">
+          <div class="q-title">2) 펌프형 로션 용기 분리배출 방법은?</div>
+          <label class="opt"><input type="radio" name="q2" value="a"> 펌프 포함 통째로 플라스틱</label>
+          <label class="opt"><input type="radio" name="q2" value="b"> 펌프는 일반쓰레기, 본체는 플라스틱</label>
+        </div>
+
+        <div class="quiz-card">
+          <div class="q-title">3) 페트병 라벨은?</div>
+          <label class="opt"><input type="radio" name="q3" value="a"> 그대로 배출</label>
+          <label class="opt"><input type="radio" name="q3" value="b"> 라벨 제거 후 압축</label>
+        </div>
+
+        <div class="quiz-card">
+          <div class="q-title">4) 깨진 유리 조각은?</div>
+          <label class="opt"><input type="radio" name="q4" value="a"> 색상별로 분리배출</label>
+          <label class="opt"><input type="radio" name="q4" value="b"> 신문지에 싸서 일반쓰레기</label>
+        </div>
+
+        <div class="quiz-card">
+          <div class="q-title">5) 비닐류는 어떻게 배출할까?</div>
+          <label class="opt"><input type="radio" name="q5" value="a"> 내용물 남아있어도 봉지째</label>
+          <label class="opt"><input type="radio" name="q5" value="b"> 이물질 제거·세척 후 건조</label>
+        </div>
+
+        <div class="quiz-actions">
+          <button class="cta-button" onclick="submitQuiz()">제출하기</button>
+          <span id="quizMsg" class="quiz-result"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 하단 네비게이션 -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="navigateTo('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">홈</div>
+  </div>
+  <div class="nav-item" onclick="navigateTo('analyzer')">
+    <div class="nav-icon">📸</div>
+    <div class="nav-label">분석</div>
+  </div>
+  <div class="nav-item" onclick="navigateTo('rewards')">
+    <div class="nav-icon">🎁</div>
+    <div class="nav-label">리워드</div>
+  </div>
+  <div class="nav-item" onclick="navigateTo('quiz')">
+    <div class="nav-icon">🧠</div>
+    <div class="nav-label">퀴즈</div>
+  </div>
+</div>
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<script>
+// 포인트 관리 (세션 기반)
+let userPoints = parseInt(sessionStorage.getItem('userPoints') || '0', 10);
+
+function updatePointUIs() {
+  const headerPoints = document.getElementById('userPoints');
+  const totalPoints = document.getElementById('totalPoints');
+  if (headerPoints) headerPoints.textContent = userPoints;
+  if (totalPoints) totalPoints.textContent = userPoints;
+}
+
+function addPoints(p) {
+  userPoints += p;
+  sessionStorage.setItem('userPoints', String(userPoints));
+  updatePointUIs();
+  updateRedeemButtons();
+}
+
+updatePointUIs();
+
+// 세션 종료 시 초기화
+window.addEventListener('pagehide', e => {
+  if (!e.persisted) {
+    sessionStorage.removeItem('userPoints');
+    sessionStorage.removeItem('quizTaken');
+  }
+});
+
+// bfcache 복원 시 초기화
+window.addEventListener('pageshow', e => {
+  if (e.persisted) {
+    sessionStorage.removeItem('userPoints');
+    sessionStorage.removeItem('quizTaken');
+    userPoints = 0;
+    updatePointUIs();
+    updateRedeemButtons();
+  }
+});
+
+// 네비게이션
+function setActive(id) {
+  ['tabHome', 'tabAnalyzer', 'tabRewards', 'tabQuiz'].forEach(i => {
+    const el = document.getElementById(i);
+    if (!el) return;
+    if (i === id) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+}
+
+function navigateTo(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageName).classList.add('active');
+  
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  
+  if (pageName === 'rewards') {
+    updatePointUIs();
+    updateRedeemButtons();
+  } else if (pageName === 'analyzer') {
+    resetAnalyzer();
+  }
+  
+  window.scrollTo(0, 0);
+}
+
+function goToHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('home').classList.add('active');
+  setActive('tabHome');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToAnalyzer() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('analyzer').classList.add('active');
+  setActive('tabAnalyzer');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[1].classList.add('active');
+  
+  const h = document.getElementById('regionSelect').value;
+  const a = document.getElementById('analyzerRegionSelect');
+  if (h) a.value = h;
+  
+  window.scrollTo(0, 0);
+}
+
+function goToRewards() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('rewards').classList.add('active');
+  setActive('tabRewards');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[2].classList.add('active');
+  updatePointUIs();
+  updateRedeemButtons();
+  window.scrollTo(0, 0);
+}
+
+function goToQuiz() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('quiz').classList.add('active');
+  setActive('tabQuiz');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[3].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// 지역 선택 동기화
+const regionSelect = document.getElementById('regionSelect');
+const analyzerRegionSelect = document.getElementById('analyzerRegionSelect');
+
+if (regionSelect && analyzerRegionSelect) {
+  regionSelect.addEventListener('change', function() {
+    analyzerRegionSelect.value = this.value;
+  });
+  analyzerRegionSelect.addEventListener('change', function() {
+    regionSelect.value = this.value;
+  });
+}
+
+// 지역별 분리수거 가이드
+const REGION_GUIDES = {
+  "서울": {
+    "플라스틱": "내용물을 깨끗이 비우고 헹군 후 라벨을 제거하여 압착해 배출합니다.",
+    "plastic": "내용물을 깨끗이 비우고 헹군 후 라벨을 제거하여 압착해 배출합니다.",
+    "종이": "테이프, 철핀 등을 제거하고 접어서 배출합니다.",
+    "paper": "테이프, 철핀 등을 제거하고 접어서 배출합니다.",
+    "유리": "병뚜껑을 제거하고 헹군 후 색상별로 분리하여 배출합니다.",
+    "glass": "병뚜껑을 제거하고 헹군 후 색상별로 분리하여 배출합니다.",
+    "금속": "캔은 헹군 후 압착하여 배출하고, 스프레이는 구멍을 뚫어 배출합니다.",
+    "metal": "캔은 헹군 후 압착하여 배출하고, 스프레이는 구멍을 뚫어 배출합니다.",
+    "비닐": "이물질을 제거하고 깨끗이 세척하여 건조 후 배출합니다.",
+    "vinyl": "이물질을 제거하고 깨끗이 세척하여 건조 후 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "부산": {
+    "플라스틱": "깨끗이 세척한 후 라벨 제거 후 배출. PVC는 일반쓰레기로 배출합니다.",
+    "plastic": "깨끗이 세척한 후 라벨 제거 후 배출. PVC는 일반쓰레기로 배출합니다.",
+    "종이": "물기가 없는 깨끗한 종이만 배출 가능합니다.",
+    "paper": "물기가 없는 깨끗한 종이만 배출 가능합니다.",
+    "유리": "뚜껑과 라벨을 제거하고 헹구어 배출합니다.",
+    "glass": "뚜껑과 라벨을 제거하고 헹구어 배출합니다.",
+    "금속": "캔 내부를 헹구고 라벨을 제거하여 압착 배출합니다.",
+    "metal": "캔 내부를 헹구고 라벨을 제거하여 압착 배출합니다.",
+    "비닐": "투명 비닐과 유색 비닐을 분리하여 배출합니다.",
+    "vinyl": "투명 비닐과 유색 비닐을 분리하여 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "대구": {
+    "플라스틱": "이물질 제거 후 압착하여 배출합니다.",
+    "plastic": "이물질 제거 후 압착하여 배출합니다.",
+    "종이팩": "내용물을 비우고 물로 헹군 뒤 말려서 배출합니다.",
+    "paper": "내용물을 비우고 물로 헹군 뒤 말려서 배출합니다.",
+    "유리": "깨진 유리는 신문지에 싸서 일반쓰레기로 배출합니다.",
+    "glass": "깨진 유리는 신문지에 싸서 일반쓰레기로 배출합니다.",
+    "금속": "캔 안쪽을 깨끗이 세척하여 배출합니다.",
+    "metal": "캔 안쪽을 깨끗이 세척하여 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "광주": {
+    "플라스틱": "PET와 일반 플라스틱을 구분하여 배출합니다.",
+    "plastic": "PET와 일반 플라스틱을 구분하여 배출합니다.",
+    "종이": "코팅된 종이는 일반쓰레기로 배출합니다.",
+    "paper": "코팅된 종이는 일반쓰레기로 배출합니다.",
+    "금속": "스프레이 캔은 완전히 비운 후 구멍을 뚫어 배출합니다.",
+    "metal": "스프레이 캔은 완전히 비운 후 구멍을 뚫어 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "인천": {
+    "플라스틱": "내용물 제거 후 헹구어 라벨을 떼고 배출합니다.",
+    "plastic": "내용물 제거 후 헹구어 라벨을 떼고 배출합니다.",
+    "종이": "박스는 테이프를 제거하고 펼쳐서 배출합니다.",
+    "paper": "박스는 테이프를 제거하고 펼쳐서 배출합니다.",
+    "유리": "병뚜껑을 분리하고 헹구어 배출합니다.",
+    "glass": "병뚜껑을 분리하고 헹구어 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "대전": {
+    "플라스틱": "깨끗이 세척 후 압착하여 배출합니다.",
+    "plastic": "깨끗이 세척 후 압착하여 배출합니다.",
+    "종이": "이물질이 묻지 않은 깨끗한 종이만 배출 가능합니다.",
+    "paper": "이물질이 묻지 않은 깨끗한 종이만 배출 가능합니다.",
+    "금속": "캔 내부를 물로 헹군 후 배출합니다.",
+    "metal": "캔 내부를 물로 헹군 후 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "울산": {
+    "플라스틱": "라벨 제거 후 압착하여 배출합니다.",
+    "plastic": "라벨 제거 후 압착하여 배출합니다.",
+    "종이": "젖은 종이는 일반쓰레기로 배출합니다.",
+    "paper": "젖은 종이는 일반쓰레기로 배출합니다.",
+    "유리": "깨진 유리병은 신문지로 감싸 배출합니다.",
+    "glass": "깨진 유리병은 신문지로 감싸 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "세종": {
+    "플라스틱": "이물질을 제거하고 깨끗이 세척하여 배출합니다.",
+    "plastic": "이물질을 제거하고 깨끗이 세척하여 배출합니다.",
+    "종이": "종이팩은 따로 모아 배출합니다.",
+    "paper": "종이팩은 따로 모아 배출합니다.",
+    "금속": "캔류는 압착하여 배출합니다.",
+    "metal": "캔류는 압착하여 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "경기": {
+    "플라스틱": "내용물 제거, 세척 후 라벨 분리하여 압착 배출합니다.",
+    "plastic": "내용물 제거, 세척 후 라벨 분리하여 압착 배출합니다.",
+    "종이": "테이프, 스프링 등 이물질 제거 후 배출합니다.",
+    "paper": "테이프, 스프링 등 이물질 제거 후 배출합니다.",
+    "유리": "병뚜껑 분리 후 깨끗이 헹구어 배출합니다.",
+    "glass": "병뚜껑 분리 후 깨끗이 헹구어 배출합니다.",
+    "금속": "캔 안을 헹군 후 압착하여 배출합니다.",
+    "metal": "캔 안을 헹군 후 압착하여 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  },
+  "제주": {
+    "플라스틱": "깨끗이 세척하여 건조 후 배출합니다.",
+    "plastic": "깨끗이 세척하여 건조 후 배출합니다.",
+    "비닐": "이물질을 완전히 제거하고 건조하여 배출합니다.",
+    "vinyl": "이물질을 완전히 제거하고 건조하여 배출합니다.",
+    "종이": "물기가 없는 깨끗한 상태로 배출합니다.",
+    "paper": "물기가 없는 깨끗한 상태로 배출합니다.",
+    "음식물": "물기를 최대한 제거한 후 전용 봉투에 배출합니다.",
+    "food": "물기를 최대한 제거한 후 전용 봉투에 배출합니다.",
+    "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+  }
+};
+
+// 기본 배출 가이드
+const DEFAULT_GUIDES = {
+  "플라스틱": "내용물을 비우고 깨끗이 헹군 후 라벨을 제거하여 압착해서 배출합니다.",
+  "plastic": "내용물을 비우고 깨끗이 헹군 후 라벨을 제거하여 압착해서 배출합니다.",
+  "종이": "테이프, 철핀 등의 이물질을 제거하고 접어서 배출합니다.",
+  "paper": "테이프, 철핀 등의 이물질을 제거하고 접어서 배출합니다.",
+  "유리": "병뚜껑을 분리하고 내용물을 비운 후 헹구어 배출합니다.",
+  "glass": "병뚜껑을 분리하고 내용물을 비운 후 헹구어 배출합니다.",
+  "금속": "캔은 내용물을 비우고 헹군 후 압착하여 배출합니다.",
+  "metal": "캔은 내용물을 비우고 헹군 후 압착하여 배출합니다.",
+  "비닐": "이물질을 제거하고 깨끗이 세척한 후 건조하여 배출합니다.",
+  "vinyl": "이물질을 제거하고 깨끗이 세척한 후 건조하여 배출합니다.",
+  "음식물": "물기를 최대한 제거한 후 음식물 전용 봉투에 배출합니다.",
+  "food": "물기를 최대한 제거한 후 음식물 전용 봉투에 배출합니다.",
+  "일반쓰레기": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다.",
+  "trash": "재활용이 불가능한 품목은 일반쓰레기로 배출합니다."
+};
+
+// AI 모델
+const TM_URL = "https://teachablemachine.withgoogle.com/models/ZDrUQugEV/";
+let model;
+
+// 엘리먼트 참조
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const resultBox = document.getElementById('result');
+const topLabel = document.getElementById('topLabel');
+const confidence = document.getElementById('confidence');
+const probsBox = document.getElementById('topProbs');
+const guideBox = document.getElementById('guide');
+const loadingMsg = document.getElementById('loadingMsg');
+const uploadZone = document.getElementById('uploadZone');
+
+// 카메라 관련
+const cameraPreview = document.getElementById('cameraPreview');
+const cameraControls = document.getElementById('cameraControls');
+let currentStream = null;
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'environment' }
+    });
+    currentStream = stream;
+    cameraPreview.srcObject = stream;
+    cameraPreview.style.display = 'block';
+    cameraControls.style.display = 'flex';
+    uploadZone.style.display = 'none';
+  } catch (err) {
+    alert('카메라 접근에 실패했습니다. 권한을 확인해주세요.');
+    console.error('카메라 에러:', err);
+  }
+}
+
+function stopCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+  cameraPreview.style.display = 'none';
+  cameraControls.style.display = 'none';
+  uploadZone.style.display = 'block';
+}
+
+async function capturePhoto() {
+  const canvas = document.createElement('canvas');
+  canvas.width = cameraPreview.videoWidth;
+  canvas.height = cameraPreview.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(cameraPreview, 0, 0);
+  
+  stopCamera();
+  
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+    await handleFile(file);
+  }, 'image/jpeg');
+}
+
+function prepareForNewAnalysis() {
+  loadingMsg.style.display = 'block';
+  resultBox.style.display = 'none';
+  topLabel.textContent = '분석 중…';
+  confidence.textContent = '';
+  probsBox.innerHTML = '';
+  guideBox.innerHTML = '';
+}
+
+fileInput.addEventListener('click', () => {
+  fileInput.value = '';
+});
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (file) handleFile(file);
+});
+
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    handleFile(files[0]);
+  }
+});
+
+async function loadModel() {
+  try {
+    loadingMsg.style.display = 'block';
+    const modelURL = TM_URL + 'model.json';
+    const metadataURL = TM_URL + 'metadata.json';
+    model = await tmImage.load(modelURL, metadataURL);
+  } catch (e) {
+    alert('모델 로딩 실패: ' + e);
+  } finally {
+    loadingMsg.style.display = 'none';
+  }
+}
+
+async function handleFile(file) {
+  prepareForNewAnalysis();
+
+  const url = URL.createObjectURL(file);
+  preview.src = url;
+  preview.style.display = 'block';
+
+  try {
+    if (preview.decode) {
+      await preview.decode();
+    } else {
+      await new Promise((resolve) => {
+        preview.onload = () => resolve();
+        preview.onerror = () => resolve();
+      });
+    }
+  } catch(_) {}
+
+  if (!model) await loadModel();
+  await predict(preview);
+
+  URL.revokeObjectURL(url);
+}
+
+async function predict(img) {
+  if (!model) return;
+
+  loadingMsg.style.display = 'block';
+  resultBox.style.display = 'none';
+
+  const preds = await model.predict(img, false);
+  preds.sort((a, b) => b.probability - a.probability);
+  const top3 = preds.slice(0, 3);
+
+  loadingMsg.style.display = 'none';
+  resultBox.style.display = 'block';
+
+  const mainClass = top3[0].className;
+  const mainProb = (top3[0].probability * 100).toFixed(1);
+
+  topLabel.textContent = mainClass;
+  confidence.textContent = `신뢰도: ${mainProb}%`;
+
+  probsBox.innerHTML = top3.map(p =>
+    `<span class="prob-badge">${p.className}: ${(p.probability * 100).toFixed(1)}%</span>`
+  ).join('');
+
+  // 포인트 추가 (분석 1회당 5P)
+  addPoints(5);
+
+  // 지역별 가이드
+  const region = analyzerRegionSelect ? analyzerRegionSelect.value : '';
+  let guideText = "";
+
+  if (region && REGION_GUIDES[region] && REGION_GUIDES[region][mainClass]) {
+    guideText = REGION_GUIDES[region][mainClass];
+  } else if (DEFAULT_GUIDES[mainClass]) {
+    guideText = DEFAULT_GUIDES[mainClass];
+  } else {
+    guideText = "해당 품목의 분리배출 기준을 확인해주세요.";
+  }
+
+  const regionText = region ? ` (${region})` : "";
+  guideBox.innerHTML = `
+    <h4>🗑️ 분리배출 방법${regionText}</h4>
+    <p>${guideText}</p>
+  `;
+}
+
+function resetAnalyzer() {
+  preview.style.display = 'none';
+  resultBox.style.display = 'none';
+  fileInput.value = '';
+  uploadZone.style.display = 'block';
+  stopCamera();
+}
+
+// 리워드
+const REWARDS = [
+  {icon:'🌳', name:'나무 심기 기부', cost:1000, desc:'당신의 이름으로 나무 1그루'},
+  {icon:'🚇', name:'대중교통 마일리지', cost:1000, desc:'교통 마일리지 적립'},
+  {icon:'📶', name:'모바일 데이터 1GB', cost:1500, desc:'모바일 데이터 추가'},
+  {icon:'🫘', name:'캠퍼스 카페 50% 1회', cost:1500, desc:'캠퍼스 카페 할인'},
+  {icon:'☕', name:'카페 아메리카노', cost:2000, desc:'제휴 카페 1잔'},
+  {icon:'🎟️', name:'환경 전시 티켓', cost:2000, desc:'전시 1인 입장'},
+  {icon:'👜', name:'에코백', cost:2500, desc:'친환경 토트백'},
+  {icon:'🎫', name:'영화 할인권', cost:3000, desc:'영화 1인'},
+  {icon:'🥤', name:'리유저블 텀블러', cost:4000, desc:'플라스틱 텀블러'},
+  {icon:'🛍️', name:'편의점 5천원', cost:5000, desc:'상품권 5,000원'}
+];
+
+function renderRewards() {
+  const grid = document.getElementById('rewardsGrid');
+  grid.innerHTML = REWARDS.map(r => `
+    <div class="reward-item">
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-info">
+        <h3>${r.name}</h3>
+        <p>${r.desc}</p>
+        <span class="reward-points">${r.cost}P</span>
+      </div>
+      <button class="redeem-btn" data-cost="${r.cost}" onclick="redeemReward(${r.cost}, '${r.name}')">교환하기</button>
+    </div>
+  `).join('');
+}
+
+function updateRedeemButtons() {
+  document.querySelectorAll('.redeem-btn').forEach(b => {
+    const c = parseInt(b.getAttribute('data-cost') || '0', 10);
+    b.disabled = userPoints < c;
+  });
+}
+
+function redeemReward(cost, name) {
+  if (userPoints >= cost) {
+    if (confirm(`${name}을(를) ${cost}P로 교환하시겠습니까?`)) {
+      addPoints(-cost);
+      alert(`🎉 ${name} 교환 완료! 남은 포인트: ${userPoints}P`);
+    }
+  } else {
+    alert(`포인트가 부족합니다.\n필요: ${cost}P / 보유: ${userPoints}P`);
+  }
+}
+
+// 퀴즈
+function submitQuiz() {
+  const msg = document.getElementById('quizMsg');
+  if (sessionStorage.getItem('quizTaken') === '1') {
+    msg.textContent = '이미 이번 세션에서 퀴즈를 완료했어요.';
+    return;
+  }
+  
+  const ans = { q1: 'b', q2: 'b', q3: 'b', q4: 'b', q5: 'b' };
+  let correct = 0;
+  
+  Object.keys(ans).forEach(k => {
+    const v = (document.querySelector(`input[name="${k}"]:checked`) || {}).value;
+    if (v === ans[k]) correct++;
+  });
+  
+  let bonus = 0;
+  if (correct >= 4) bonus = 10;
+  else if (correct === 3) bonus = 5;
+  
+  if (bonus > 0) {
+    addPoints(bonus);
+    msg.textContent = `정답 ${correct}/5 🎉 보너스 +${bonus}P 지급!`;
+  } else {
+    msg.textContent = `정답 ${correct}/5. 다음에 다시 도전!`;
+  }
+  
+  sessionStorage.setItem('quizTaken', '1');
+}
+
+// 초기화
+renderRewards();
+updateRedeemButtons();
+</script>ㄴ
+</body>
+</html>
